@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat App</title>
+</head>
+<body>
+
+  <h1>Chat App</h1>
+
+  <form id="usernameForm">
+    <label for="username">Set Your Username:</label>
+    <input type="text" id="username" name="username" required>
+    <button type="submit">Set Username</button>
+  </form>
+
+  <h2>Users</h2>
+  <ul id="userList"></ul>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const usernameForm = document.getElementById('usernameForm');
+      const userList = document.getElementById('userList');
+
+      usernameForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const formData = new FormData(usernameForm);
+        const username = formData.get('username');
+
+        // Send a POST request to create a new user
+        const response = await fetch('http://localhost:3000/users', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name: username }),
+        });
+
+        if (response.ok) {
+          // Fetch the list of users and update the user interface
+          const userListResponse = await fetch('http://localhost:3000/users');
+          const users = await userListResponse.json();
+
+          // Clear the existing list
+          userList.innerHTML = '';
+
+          // Populate the updated list
+          users.forEach(user => {
+            const listItem = document.createElement('li');
+            listItem.textContent = user.username;
+            userList.appendChild(listItem);
+          });
+        } else {
+          console.error('Failed to set username');
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

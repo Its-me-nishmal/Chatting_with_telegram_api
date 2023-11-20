@@ -22,7 +22,7 @@ app.post('/users', (req, res) => {
 });
 
 app.get('/users', (req, res) => {
-  res.json(users);
+  res.sendFile(__dirname + '/user.html');
 });
 
 app.post('/messages', async (req, res) => {
