@@ -66,6 +66,12 @@
       }
     }
 
+    a {
+            text-decoration: none; /* Remove underline */
+            color: #007bff; /* Set your desired link color */
+            font-weight: bold;
+        }
+
    
 
 
@@ -117,6 +123,11 @@
         class="btn btn-success" onclick="sendMessage()">Send</button>
     </form>
   </div>
+
+  <p>
+    V.0.01 : Contact us on WhatsApp: 
+    <a href="https://api.whatsapp.com/send?phone=7994107442" target="_blank">Whatsapp</a>
+</p>
 
   <script>
     async function sendMessage() {
