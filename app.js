@@ -75,6 +75,20 @@ io.on('connection', (socket) => {
   });
 });
 
+
+
+
+
+app.post('/register', (req, res) => {
+  const userId = socket.id;
+  connectedUsers[userId] = true;
+  io.emit('connected users', Object.keys(connectedUsers));
+  console.log(`User ${userId} registered`);
+  res.json({ userId });
+});
+
+
+
 function getRandomUserId(excludeUserId) {
   // Get an array of user IDs excluding the specified user and those in ongoing conversations
   const availableUsers = Object.keys(connectedUsers).filter(id => id !== excludeUserId && !ongoingConversations[id]);
