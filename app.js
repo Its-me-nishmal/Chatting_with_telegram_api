@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 const server = http.createServer(app);
@@ -15,9 +16,11 @@ const ongoingConversations = {};
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/user.html');
 });
+let ok
 
 io.on('connection', (socket) => {
   const userId = socket.id;
+  ok = userId
   connectedUsers[userId] = true;
 
   io.emit('connected users', Object.keys(connectedUsers));
@@ -79,13 +82,13 @@ io.on('connection', (socket) => {
 
 
 
-app.post('/register', (req, res) => {
-  const userId = socket.id;
-  connectedUsers[userId] = true;
-  io.emit('connected users', Object.keys(connectedUsers));
-  console.log(`User ${userId} registered`);
-  res.json({ userId });
-});
+// app.get('/register', (req, res) => {
+//   const userId = req.query.socketId;
+//   connectedUsers[userId] = true;
+//   io.emit('connected users', Object.keys(connectedUsers));
+//   console.log(`User ${userId} registered`);
+//   res.json({ userId });
+// });
 
 
 

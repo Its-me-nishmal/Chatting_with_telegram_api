@@ -1,41 +1,199 @@
-<!doctype html>
-<html>
-  <head>
-    <title>Chat App</title>
-  </head>
-  <body>
-    <ul id="messages"></ul>
-    <p>Online Users: <span id="online-count">0</span></p>
-    <button id="chat-random">Chat with Random User</button>
-    <form id="form" action="">
-      <input id="m" autocomplete="off" /><button>Send</button>
-    </form>
-    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script>
-        var socket = io();
-      
-        // jQuery shorthand for document ready
-        $(function () {
-          $('form').submit(function () {
-            var message = $('#m').val();
-            socket.emit('chat message', { message });
-            $('#m').val('');
-            return false;
-          });
+<!DOCTYPE html>
+<html lang="en">
 
-          $('#chat-random').click(function () {
-            socket.emit('chat message', { message: 'Hello, random user!' });
-          });
-      
-          socket.on('chat message', function (data) {
-            $('#messages').append($('<li>').text(`User ${data.from}: ${data.message}`));
-          });
-      
-          socket.on('connected users', function (users) {
-            $('#online-count').text(users.length);
-          });
-        });
-    </script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GhostChat</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+  <!-- Custom Styles -->
+  <style>
+    body {
+      background-color: #a9a3a3;
+      margin: 0% 20%;
+      height: 100vh;
+    }
+
+    .chat-header {
+      text-align: center;
+      font-size: 25px;
+      font-weight: bold;
+      margin-top: 25px;
+      color: rgb(0, 48, 137);
+    }
+
+    .chat-container {
+      background-color: white;
+      border-radius: 5px;
+      overflow-y: auto;
+      height: 400px;
+      padding: 10px;
+    }
+
+    .message {
+      padding: 5px 10px;
+      margin: 5px 0;
+      border-radius: 10px;
+      max-width: 80%;
+      clear: both;
+      font-size: 16px;
+      animation: fade-in 0.5s ease;
+    }
+
+    .own-message {
+      background-color: #DCF8C6;
+      margin-left: auto;
+      text-align: right;
+      width: fit-content;
+    }
+
+    .bot-message {
+      background-color: #ECECEC;
+      width: fit-content;
+    }
+
+    @keyframes fade-in {
+      0% {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    /* Modal styling */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      padding-top: 100px;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgb(0, 0, 0);
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-content {
+      background-color: #ffffff;
+      margin: auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 50%;
+    }
+
+    #red {
+      color: red;
+    }
+
+    #green {
+      color: green;
+    }
+
+    p {
+      padding-top: 10px;
+    }
+
+    small {
+      padding-top: 10px;
+    }
+    #ppp{
+      text-align: center;
+      color: rgb(0, 255, 200);
+    }
+  </style>
+</head>
+
+<body onload="checkForUserName()">
+  <!-- Header -->
+  <div class="chat-header" >
+    𝔾𝕙𝕠𝕤𝕥ℂ𝕙𝕒𝕥
+  </div>
+
+  <p id="ppp">Online  <span id="online-count"></span> Users</p>
+
+  <!-- Chat Section -->
+  <div class="chat-container mb-3" id="chat-container">
+    <!-- Messages will be appended here -->
+  </div>
+
+
+  <div>
+    <form id="form" action="" class="d-flex">
+      <input id="m" class="form-control mr-2 me-2" onkeyup="handleKeyPress(event)" autocomplete="off" /><button
+        class="btn btn-success" onclick="sendMessage()">Send</button>
+    </form>
+  </div>
+
+  <script>
+    async function sendMessage() {
+      const messageBox = document.getElementById('m');
+      const message = messageBox.value;
+      if (!message.trim()) return;
+
+      // Append User's Message
+      appendMessage(message, true);
+      // Emit the message to the server
+      socket.emit('chat message', { message });
+      // Clear input
+      messageBox.value = '';
+    }
+
+    function appendMessage(message, isOwn) {
+      const chatContainer = document.getElementById('chat-container');
+      const messageDiv = document.createElement('div');
+      messageDiv.classList.add('message');
+      messageDiv.classList.add(isOwn ? 'own-message' : 'bot-message');
+      messageDiv.textContent = message;
+      chatContainer.appendChild(messageDiv);
+
+      // Animate the message
+      setTimeout(() => {
+        messageDiv.style.opacity = 1;
+      }, 1000);
+
+      chatContainer.scrollTop = chatContainer.scrollHeight; // Scroll to the bottom
+    }
+
+    function handleKeyPress(event) {
+      if (event.keyCode === 13) {
+        sendMessage(); // Call sendMessage function when Enter is pressed
+      }
+    }
+  </script>
+  <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <script>
+    var socket = io();
+
+    // jQuery shorthand for document ready
+    $(function () {
+      $('form').submit(function () {
+        sendMessage();
+        return false;
+      });
+
+      socket.on('chat message', function (data) {
+        const isOwn = data.from === 'You';
+        appendMessage(`${isOwn ? 'You' : data.message}`, isOwn);
+      });
+
+      socket.on('connected users', function (users) {
+        $('#online-count').text(users.length);
+      });
+    });
+  </script>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"></script>
+</body>
+
 </html>
