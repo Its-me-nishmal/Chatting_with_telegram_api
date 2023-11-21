@@ -5,7 +5,8 @@
   </head>
   <body>
     <ul id="messages"></ul>
-    <select id="user-list"></select>
+    <p>Online Users: <span id="online-count">0</span></p>
+    <button id="chat-random">Chat with Random User</button>
     <form id="form" action="">
       <input id="m" autocomplete="off" /><button>Send</button>
     </form>
@@ -17,11 +18,14 @@
         // jQuery shorthand for document ready
         $(function () {
           $('form').submit(function () {
-            var selectedUser = $('#user-list').val();
             var message = $('#m').val();
-            socket.emit('chat message', { to: selectedUser, message });
+            socket.emit('chat message', { message });
             $('#m').val('');
             return false;
+          });
+
+          $('#chat-random').click(function () {
+            socket.emit('chat message', { message: 'Hello, random user!' });
           });
       
           socket.on('chat message', function (data) {
@@ -29,17 +33,9 @@
           });
       
           socket.on('connected users', function (users) {
-            updateConnectedUsers(users);
+            $('#online-count').text(users.length);
           });
         });
-      
-        function updateConnectedUsers(users) {
-          $('#user-list').empty();
-          users.forEach(function (user) {
-            $('#user-list').append($('<option>').val(user).text(`User ${user}`));
-          });
-        }
-      </script>
-      
+    </script>
   </body>
 </html>
