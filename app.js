@@ -14,28 +14,33 @@ app.get('/', (req, res) => {
 });
 
 io.on('connection', (socket) => {
-  // Generate a unique user identifier
   const userId = socket.id;
   connectedUsers[userId] = true;
 
-  // Broadcast the list of connected users to all clients
   io.emit('connected users', Object.keys(connectedUsers));
 
   console.log(`User ${userId} connected`);
 
   socket.on('disconnect', () => {
     delete connectedUsers[userId];
-    // Broadcast the updated list of connected users
     io.emit('connected users', Object.keys(connectedUsers));
-
     console.log(`User ${userId} disconnected`);
   });
 
-  socket.on('chat message', (msg) => {
-    console.log(`Message from user ${userId}: ${msg}`);
-    io.emit('chat message', { userId, message: msg });
+  socket.on('chat message', (data) => {
+    const { to, message } = data;
+    const from = userId;
+
+    if (to && connectedUsers[to]) {
+      // Send the private message to the selected user
+      io.to(to).emit('chat message', { from, message });
+    } else {
+      // Broadcast the message to all users if no specific user is selected
+      io.emit('chat message', { from, message });
+    }
   });
 });
+
 
 server.listen(3000, () => {
   console.log('Server listening on port 3000');

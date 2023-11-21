@@ -5,26 +5,41 @@
   </head>
   <body>
     <ul id="messages"></ul>
+    <select id="user-list"></select>
     <form id="form" action="">
       <input id="m" autocomplete="off" /><button>Send</button>
     </form>
     <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script>
-      var socket = io();
-
-      // jQuery shorthand for document ready
-      $(function () {
-        $('form').submit(function () {
-          socket.emit('chat message', $('#m').val());
-          $('#m').val('');
-          return false;
+        var socket = io();
+      
+        // jQuery shorthand for document ready
+        $(function () {
+          $('form').submit(function () {
+            var selectedUser = $('#user-list').val();
+            var message = $('#m').val();
+            socket.emit('chat message', { to: selectedUser, message });
+            $('#m').val('');
+            return false;
+          });
+      
+          socket.on('chat message', function (data) {
+            $('#messages').append($('<li>').text(`User ${data.from}: ${data.message}`));
+          });
+      
+          socket.on('connected users', function (users) {
+            updateConnectedUsers(users);
+          });
         });
-
-        socket.on('chat message', function (msg) {
-          $('#messages').append($('<li>').text(msg));
-        });
-      });
-    </script>
+      
+        function updateConnectedUsers(users) {
+          $('#user-list').empty();
+          users.forEach(function (user) {
+            $('#user-list').append($('<option>').val(user).text(`User ${user}`));
+          });
+        }
+      </script>
+      
   </body>
 </html>
